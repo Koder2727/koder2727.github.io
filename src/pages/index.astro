@@ -1,0 +1,141 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { HOME, SITE } from "../consts";
+
+const notes = (await getCollection("notes"))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 4);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const readingTime = (body: string) =>
+  Math.max(1, Math.round((body ?? "").trim().split(/\s+/).length / 200));
+---
+
+<Base title={SITE.title} section="home">
+  <header class="masthead wrap">
+    <div class="masthead-grid">
+      <div class="masthead-text">
+        <p class="kicker">// software engineer · systems &amp; networking</p>
+        <h1 class="masthead-name">{HOME.name}</h1>
+        <p class="masthead-role">{HOME.tagline}</p>
+      </div>
+      <figure class="portrait">
+        <img src="/kunal.png" alt={HOME.name} width="240" height="240" loading="eager" />
+      </figure>
+    </div>
+    <div class="meta-row">
+      <span><span class="k">loc</span> <span class="v">{HOME.location}</span></span>
+      <span class="dotline">·</span>
+      <span><span class="k">status</span> <span class="v cursor">{HOME.status}</span></span>
+    </div>
+    <div class="links">
+      {HOME.links.map((l) => (
+        <a class="linkbtn" href={l.url} rel="me noopener" target="_blank">
+          {l.label}<span class="arrow">↗</span>
+        </a>
+      ))}
+    </div>
+  </header>
+
+  <section class="wrap section">
+    <div class="sec"><span class="sec-num">01</span><span class="sec-name">whoami</span></div>
+    <div class="prose lead">
+      {HOME.summary.map((p) => <p>{p}</p>)}
+    </div>
+
+    <div class="spec">
+      <div class="spec-prompt"><span class="sigil">$</span>kunal --stack</div>
+      <div class="spec-rows">
+        {HOME.stack.map((s) => (
+          <div class="spec-row">
+            <span class="key">{s.label}</span>
+            <span class="val">{s.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {HOME.currently.length > 0 && (
+    <section class="wrap section">
+      <div class="sec"><span class="sec-num">02</span><span class="sec-name">currently</span></div>
+      <ul class="bullets">
+        {HOME.currently.map((c) => <li>{c}</li>)}
+      </ul>
+    </section>
+  )}
+
+  {HOME.competencies.length > 0 && (
+    <section class="wrap section">
+      <div class="sec"><span class="sec-num">03</span><span class="sec-name">what i do</span></div>
+      <dl class="defs">
+        {HOME.competencies.map((c) => (
+          <div class="def">
+            <dt>{c.name}</dt>
+            <dd>{c.detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )}
+
+  {HOME.experience.length > 0 && (
+    <section class="wrap section">
+      <div class="sec"><span class="sec-num">04</span><span class="sec-name">experience</span></div>
+      <div class="xp">
+        {HOME.experience.map((job) => (
+          <div class="xp-item">
+            <div class="xp-head">
+              <h3 class="xp-role">{job.role} <span class="xp-org">@ {job.org}</span></h3>
+              <span class="xp-period">{job.period}</span>
+            </div>
+            {job.stack && <p class="xp-stack">{job.stack}</p>}
+            <ul class="bullets">
+              {job.points.map((p) => <li>{p}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {HOME.education.length > 0 && (
+    <section class="wrap section">
+      <div class="sec"><span class="sec-num">05</span><span class="sec-name">education</span></div>
+      <div class="edu">
+        {HOME.education.map((e) => (
+          <div class="edu-item">
+            <div>
+              <h3>{e.school}</h3>
+              <p class="muted">{e.degree}</p>
+            </div>
+            <span class="xp-period">{e.period}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {notes.length > 0 && (
+    <section class="wrap section">
+      <div class="sec">
+        <span class="sec-num">06</span><span class="sec-name">notes</span>
+        <a class="see-all" href="/notes/">all →</a>
+      </div>
+      <div class="notes-index">
+        {notes.map((n) => (
+          <div class="note-line">
+            <a href={`/notes/${n.id}/`}>
+              <time datetime={n.data.date.toISOString()}>{fmt(n.data.date)}</time>
+              <span class="nt">{n.data.title}</span>
+              <span class="rt">{readingTime(n.body ?? "")} min</span>
+            </a>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+</Base>

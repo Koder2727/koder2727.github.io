@@ -1,0 +1,13 @@
+---
+import { SITE } from "../consts";
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <span><span class="sigil">$</span> © {year} {SITE.author}</span>
+    <span class="footer-meta">
+      <a href="/rss.xml">rss</a> · <a href="https://github.com/Koder2727">src</a> · built with astro
+    </span>
+  </div>
+</footer>

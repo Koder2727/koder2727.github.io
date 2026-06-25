@@ -1,0 +1,54 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { SITE } from "../../consts";
+
+const notes = (await getCollection("notes"))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+const readingTime = (body: string) =>
+  Math.max(1, Math.round(body.trim().split(/\s+/).length / 200));
+---
+
+<Base title={`Notes · ${SITE.author}`} section="notes" description="Engineering notes on distributed systems, Linux networking, and concurrency.">
+  <section class="wrap section page-head">
+    <h1 class="page-title"><span class="hash">~/</span>notes</h1>
+    <p class="page-sub">
+      Working notes on distributed systems, Linux networking, and concurrency —
+      the gotchas I hit and how I reason about them.
+    </p>
+  </section>
+
+  <section class="wrap section">
+    {notes.length > 0 ? (
+      <div class="note-cards">
+        {notes.map((n, i) => (
+          <div class="note-card">
+            <a href={`/notes/${n.id}/`}>
+              <div class="note-card-meta">
+                <span class="idx">{String(notes.length - i).padStart(2, "0")}</span>
+                <span class="dot">·</span>
+                <time datetime={n.data.date.toISOString()}>{fmt(n.data.date)}</time>
+                <span class="dot">·</span>
+                <span>{readingTime(n.body ?? "")} min read</span>
+              </div>
+              <h2 class="note-card-title">{n.data.title}</h2>
+              {n.data.summary && <p class="note-card-summary">{n.data.summary}</p>}
+              {n.data.tags.length > 0 && (
+                <div class="tags">
+                  {n.data.tags.map((t) => <span class="tag">{t}</span>)}
+                </div>
+              )}
+            </a>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p class="muted">No notes yet — the first one is brewing.</p>
+    )}
+  </section>
+</Base>

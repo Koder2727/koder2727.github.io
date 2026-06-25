@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { SITE } from "../../consts";
+
+export async function getStaticPaths() {
+  const notes = (await getCollection("notes")).filter((n) => !n.data.draft);
+  return notes.map((note) => ({
+    params: { slug: note.id },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const readingTime = Math.max(1, Math.round((note.body ?? "").trim().split(/\s+/).length / 200));
+---
+
+<Base
+  title={`${note.data.title} · ${SITE.author}`}
+  section="notes"
+  description={note.data.summary ?? SITE.description}
+>
+  <article class="wrap article">
+    <header class="article-head">
+      <a class="back-link" href="/notes/">← notes</a>
+      <h1 class="article-title">{note.data.title}</h1>
+      <div class="article-meta">
+        <time datetime={note.data.date.toISOString()}>{fmt(note.data.date)}</time>
+        <span class="dot">·</span>
+        <span>{readingTime} min read</span>
+      </div>
+      {note.data.tags.length > 0 && (
+        <div class="tags">
+          {note.data.tags.map((t) => <span class="tag">{t}</span>)}
+        </div>
+      )}
+    </header>
+
+    <div class="prose article-body">
+      <Content />
+    </div>
+
+    <footer class="article-foot">
+      <a class="back-link" href="/notes/">← back to all notes</a>
+    </footer>
+  </article>
+</Base>
